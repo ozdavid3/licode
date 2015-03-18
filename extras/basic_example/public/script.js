@@ -9,18 +9,26 @@ function getParameterByName(name) {
 }
 
 function startRecording () {
-  if (room !== undefined){
-    if (!recording){
-      room.startRecording(localStream, function(id) {
-        recording = true;
-        recordingId = id;
-      });
-      
-    } else {
-      room.stopRecording(recordingId);
-      recording = false;
+
+    var rtmpUrl = document.getElementById('rtmpurl').value;
+
+    if (room !== undefined && rtmpUrl !== undefined && rtmpUrl.startsWith('rtmp')){
+        if (!recording){
+            alert("script rtmp="+rtmpUrl);
+            room.startRecording(localStream, function(id) {
+
+                recording = true;
+                recordingId = id;
+            }, rtmpUrl);
+
+        } else {
+            room.stopRecording(recordingId);
+            recording = false;
+        }
     }
-  }
+    else{
+        alert("room not initialized or invalid rtmp url");
+    }
 }
 
 window.onload = function () {

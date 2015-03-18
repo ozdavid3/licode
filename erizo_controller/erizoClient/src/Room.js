@@ -457,9 +457,11 @@ Erizo.Room = function (spec) {
     };
 
     // Returns callback(id, error)
-    that.startRecording = function (stream, callback) {
+    that.startRecording = function (stream, callback, rtmpDistributionUrl) {
+        alert("Distributing to rtmp stream:"+rtmpDistributionUrl);
+        L.Logger.debug("distributing to "+rtmpDistributionUrl);
         L.Logger.debug("Start Recording streamaa: " + stream.getID());
-        sendMessageSocket('startRecorder', {to: stream.getID()}, function(id, error){
+        sendMessageSocket('startRecorder', {to: stream.getID(), rtmpUrl:rtmpDistributionUrl}, function(id, error){
             if (id === null){
                 L.Logger.error('Error on start recording', error);
                 if (callback) callback(undefined, error);
