@@ -31,6 +31,23 @@ function startRecording () {
     }
 }
 
+function sendShual() {
+    var req = new XMLHttpRequest();
+    var url = serverUrl + 'shual/';
+    var body = {username: "aaa", role: "bbb"};
+
+    req.onreadystatechange = function () {
+        if (req.readyState === 4) {
+            alert(req.responseText);
+        }
+    };
+
+    req.open('POST', url, true);
+    req.setRequestHeader('Content-Type', 'application/json');
+    req.send(JSON.stringify(body));
+}
+
+
 window.onload = function () {
   recording = false;
   var screen = getParameterByName("screen");
@@ -87,6 +104,8 @@ window.onload = function () {
 
         document.body.appendChild(div);
         stream.show("test" + stream.getID());
+
+          stream.play()
 
       });
 
