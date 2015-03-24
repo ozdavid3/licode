@@ -4,7 +4,6 @@
 #include "../WebRtcConnection.h"
 #include "../rtp/RtpHeaders.h"
 #include "../rtp/RtpVP8Parser.h"
-//#include "libavformat/avformat.h"
 
 namespace erizo {
 
@@ -32,8 +31,8 @@ ExternalOutput::ExternalOutput(const std::string& outputUrl) :
 		outputUrl.copy(context_->filename, sizeof(context_->filename), 0);
 
 		// Asaf //
-		context_->oformat = av_guess_format(NULL, context_->filename, NULL);
-		//context_->oformat = av_guess_format("flv", context_->filename, NULL);
+		//context_->oformat = av_guess_format(NULL, context_->filename, NULL);
+		context_->oformat = av_guess_format("flv", context_->filename, NULL);
 		// Asaf //
 
 		if (!context_->oformat) {
@@ -333,6 +332,10 @@ void ExternalOutput::writeVideoData(char* buf, int len) {
 				avpkt.dts = firstPTS;
 				avpkt.stream_index = 0;
 
+				if (gotFrame2){
+					avpkt.flags |= AV_PKT_FLAG_KEY;
+				}
+
 				// Asaf //
 				int ret = av_interleaved_write_frame(context_, &avpkt); // takes ownership of the packet
 
@@ -371,13 +374,34 @@ bool ExternalOutput::initContext() {
 			&& context_->oformat->audio_codec != AV_CODEC_ID_NONE
 			&& video_stream_ == NULL && audio_stream_ == NULL) {
 
+
+		ELOG_ERROR("in initContext - before");
+
+		m_videoEncoderCodecInfo.codec = VIDEO_CODEC_H264;
+		m_videoEncoderCodecInfo.payloadType = 96;
+		m_videoEncoderCodecInfo.width = 640;
+		m_videoEncoderCodecInfo.height = 480;
+		m_videoEncoderCodecInfo.bitRate = 900000;
+		m_videoEncoderCodecInfo.frameRate = 30;
+
+		m_videoDecoderCodecInfo.codec = VIDEO_CODEC_VP8;
+		m_videoDecoderCodecInfo.payloadType = VP8_90000_PT;
+		m_videoDecoderCodecInfo.width = 640;
+		m_videoDecoderCodecInfo.height = 480;
+		m_videoDecoderCodecInfo.bitRate = 900000;
+		m_videoDecoderCodecInfo.frameRate = 30;
+
+		m_vEncoder.initEncoder(m_videoEncoderCodecInfo);
+		m_vDecoder.initDecoder(m_videoDecoderCodecInfo);
+
+		/*
 		AVCodec* videoCodec = avcodec_find_encoder(
 				context_->oformat->video_codec);
 		if (videoCodec == NULL) {
 			ELOG_ERROR("Could not find video codec");
 			return false;
 		}
-		video_stream_ = avformat_new_stream(context_, videoCodec);
+		video_stream_ = avformat_new_stream(context_, m_vEncoder.vCoder);
 		video_stream_->id = 0;
 		video_stream_->codec->codec_id = context_->oformat->video_codec;
 		video_stream_->codec->width = 640;
@@ -388,7 +412,15 @@ bool ExternalOutput::initContext() {
 		if (context_->oformat->flags & AVFMT_GLOBALHEADER) {
 			video_stream_->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
 		}
-		context_->oformat->flags |= AVFMT_VARIABLE_FPS;
+*/		video_stream_ = avformat_new_stream(context_, m_vEncoder.vCoder);
+
+		AVCodecContext* streamCodecContext = video_stream_->codec;
+
+		avcodec_copy_context(streamCodecContext, m_vEncoder.vCoderContext);
+
+		video_stream_->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
+
+		//context_->oformat->flags |= AVFMT_VARIABLE_FPS;
 
 		AVCodec* audioCodec = avcodec_find_encoder(
 				context_->oformat->audio_codec);
@@ -427,32 +459,6 @@ bool ExternalOutput::initContext() {
 
 		avformat_network_init();
 
-		ELOG_ERROR("in initContext - before");
-
-		m_videoEncoderCodecInfo.codec = VIDEO_CODEC_H264;
-		m_videoEncoderCodecInfo.payloadType = 96;
-		m_videoEncoderCodecInfo.width = 640;
-		m_videoEncoderCodecInfo.height = 480;
-		m_videoEncoderCodecInfo.bitRate = 900000;
-		m_videoEncoderCodecInfo.frameRate = 30;
-
-		m_videoDecoderCodecInfo.codec = VIDEO_CODEC_VP8;
-		m_videoDecoderCodecInfo.payloadType = VP8_90000_PT;
-		m_videoDecoderCodecInfo.width = 640;
-		m_videoDecoderCodecInfo.height = 480;
-		m_videoDecoderCodecInfo.bitRate = 900000;
-		m_videoDecoderCodecInfo.frameRate = 30;
-
-		ELOG_ERROR("in initContext - before1");
-
-		m_vEncoder.initEncoder(m_videoEncoderCodecInfo);
-
-		ELOG_ERROR("in initContext - before2");
-
-		m_vDecoder.initDecoder(m_videoDecoderCodecInfo);
-
-		ELOG_ERROR("in initContext - after");
-		// Asaf //
 	}
 	return true;
 }

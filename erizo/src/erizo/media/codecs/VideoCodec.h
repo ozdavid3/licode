@@ -34,9 +34,9 @@ namespace erizo {
           unsigned char*& outBuffer, int& hasFrame, long long pts);
       int closeEncoder ();
 
-    private:
       AVCodec* vCoder;
       AVCodecContext* vCoderContext;
+    private:
       AVFrame* cPicture;
   };
 

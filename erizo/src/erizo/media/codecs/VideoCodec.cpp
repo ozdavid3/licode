@@ -4,7 +4,9 @@
 
 #include "VideoCodec.h"
 
+extern "C" {
 #include <libavutil/opt.h>
+}
 
 #include <cstdio>
 #include <string.h>
@@ -54,30 +56,32 @@ namespace erizo {
     vCoderContext->max_b_frames = 0;
 
     vCoderContext->bit_rate = info.bitRate;
-    vCoderContext->rc_min_rate = info.bitRate; //
-    vCoderContext->rc_max_rate = info.bitRate; // VPX_CBR
-    vCoderContext->qmin = 0;
-    vCoderContext->qmax = 40; // rc_quantifiers
-    vCoderContext->profile = 3;
+//    vCoderContext->rc_min_rate = info.bitRate; //
+//    vCoderContext->rc_max_rate = info.bitRate; // VPX_CBR
+//    vCoderContext->qmin = 0;
+//    vCoderContext->qmax = 40; // rc_quantifiers
+//    vCoderContext->profile = 3;
 //    vCoderContext->frame_skip_threshold = 30;
-    vCoderContext->rc_buffer_aggressivity = 0.95;
+//    vCoderContext->rc_buffer_aggressivity = 0.95;
     //vCoderContext->rc_buffer_size = vCoderContext->bit_rate;
     //vCoderContext->rc_initial_buffer_occupancy = vCoderContext->bit_rate / 2;
 //    vCoderContext->rc_initial_buffer_occupancy = 500;
 
 //    vCoderContext->rc_buffer_size = 1000000; // Asaf // 1000 -> 1000000
 
-    //vCoderContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
-    //av_opt_set(vCoderContext, "preset", "ultrafast", 0);
+    vCoderContext->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    av_opt_set(vCoderContext->priv_data, "preset", "ultrafast", 0);
     //av_set_options_string(vCoderContext, "preset", "ultrafast", 0);
 
     vCoderContext->width = info.width;
     vCoderContext->height = info.height;
     vCoderContext->pix_fmt = PIX_FMT_YUV420P;
-    vCoderContext->time_base = (AVRational) {1, 90000};
+    vCoderContext->codec_id = VideoCodecID2ffmpegDecoderID(info.codec);
+    //vCoderContext->time_base = (AVRational) {1, 90000};
+    vCoderContext->time_base = (AVRational) {1, 30};
     //
-    vCoderContext->sample_aspect_ratio =
-      (AVRational) {info.width,info.height};
+//    vCoderContext->sample_aspect_ratio =
+//      (AVRational) {info.width,info.height};
     //vCoderContext->thread_count = 4;
 
     if (avcodec_open2(vCoderContext, vCoder, NULL) < 0) {
@@ -132,6 +136,7 @@ namespace erizo {
     //        pkt.size, ret, got_packet, pkt.pts, pkt.dts);
     if (!ret && got_packet && vCoderContext->coded_frame) {
       vCoderContext->coded_frame->pts = pkt.pts;
+      hasFrame =
       vCoderContext->coded_frame->key_frame =
         !!(pkt.flags & AV_PKT_FLAG_KEY);
     }
