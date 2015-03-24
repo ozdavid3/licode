@@ -156,7 +156,7 @@ void ExternalOutput::writeAudioData(char* buf, int len) {
 	timestampToWrite += audioOffsetMsec_
 			/ (1000 / audio_stream_->time_base.den); // in practice, our timebase den is 1000, so this operation is a no-op.
 
-	ELOG_ERROR("audio_stream_->time_base.den = %d", audio_stream_->time_base.den);
+	//ELOG_ERROR("audio_stream_->time_base.den = %d", audio_stream_->time_base.den);
 
 //     ELOG_INFO("Writing audio frame %d with timestamp %u, normalized timestamp %u, audio offset msec %u, length %d, input timebase: %d/%d, target timebase: %d/%d",
 //                head->getSeqNumber(), head->getTimestamp(), timestampToWrite, audioOffsetMsec_, len - head->getHeaderLength(),
@@ -171,8 +171,8 @@ void ExternalOutput::writeAudioData(char* buf, int len) {
 	avpkt.dts = timestampToWrite;
 	avpkt.stream_index = 1;
 	int ret = av_interleaved_write_frame(context_, &avpkt); // takes ownership of the packet
-	ELOG_ERROR("av_interleaved_write_frame for audio returned %d", ret);
-	ELOG_ERROR("sending audio packet PTS = %lld", timestampToWrite);
+	//ELOG_ERROR("av_interleaved_write_frame for audio returned %d", ret);
+	//ELOG_ERROR("sending audio packet PTS = %lld", timestampToWrite);
 }
 
 void ExternalOutput::writeVideoData(char* buf, int len) {
@@ -285,20 +285,20 @@ void ExternalOutput::writeVideoData(char* buf, int len) {
 			currentTimestamp += 0xFFFFFFFF;
 		}
 
-		ELOG_ERROR("Times: currentTimestamp = %lld", currentTimestamp);
+		//ELOG_ERROR("Times: currentTimestamp = %lld", currentTimestamp);
 
 		long long timestampToWrite = (currentTimestamp - firstVideoTimestamp_)
 				/ (90000 / video_stream_->time_base.den); // All of our video offerings are using a 90khz clock.
 
-		ELOG_ERROR("video_stream_->time_base.den = %d", video_stream_->time_base.den);
+		//ELOG_ERROR("video_stream_->time_base.den = %d", video_stream_->time_base.den);
 
-		ELOG_ERROR("Times: timestampToWrite1 = %lld", timestampToWrite);
+		//ELOG_ERROR("Times: timestampToWrite1 = %lld", timestampToWrite);
 
 		// Adjust for our start time offset
 		timestampToWrite += videoOffsetMsec_
 				/ (1000 / video_stream_->time_base.den); // in practice, our timebase den is 1000, so this operation is a no-op.
 
-		ELOG_ERROR("Times: timestampToWrite2 = %lld", timestampToWrite);
+		//ELOG_ERROR("Times: timestampToWrite2 = %lld", timestampToWrite);
 
 		/* ELOG_DEBUG("Writing video frame %d with timestamp %u, normalized timestamp %u, video offset msec %u, length %d, input timebase: %d/%d, target timebase: %d/%d", */
 		/*            head->getSeqNumber(), head->getTimestamp(), timestampToWrite, videoOffsetMsec_, unpackagedSize_, */
@@ -306,7 +306,7 @@ void ExternalOutput::writeVideoData(char* buf, int len) {
 		/*            video_stream_->time_base.num, video_stream_->time_base.den);                 // actual timebase */
 
 		// Asaf //
-		ELOG_ERROR("starting to process a video packet");
+		//ELOG_ERROR("starting to process a video packet");
 
 		int gotFrame;
 		int gotFrame2;
@@ -321,8 +321,8 @@ void ExternalOutput::writeVideoData(char* buf, int len) {
 			int size1 = m_vEncoder.encodeVideo((unsigned char*) decodeToBuffer,
 				size, outbuff, gotFrame2, firstPTS);
 			if (size1 > 0){
-				ELOG_ERROR("address of the buffer is %p", outbuff);
-				ELOG_ERROR("m_vDecoder.decodeVideo returned %d m_vEncoder.encodeVideo returned %d", size, size1);
+//				ELOG_ERROR("address of the buffer is %p", outbuff);
+//				ELOG_ERROR("m_vDecoder.decodeVideo returned %d m_vEncoder.encodeVideo returned %d", size, size1);
 
 				AVPacket avpkt;
 				av_init_packet(&avpkt);
@@ -339,8 +339,8 @@ void ExternalOutput::writeVideoData(char* buf, int len) {
 				// Asaf //
 				int ret = av_interleaved_write_frame(context_, &avpkt); // takes ownership of the packet
 
-				ELOG_ERROR("sending video packet PTS = %lld", firstPTS);
-				ELOG_ERROR("av_interleaved_write_frame for video returned %d", ret);
+				//ELOG_ERROR("sending video packet PTS = %lld", firstPTS);
+				//ELOG_ERROR("av_interleaved_write_frame for video returned %d", ret);
 				firstPTS = 0;
 			}
 		}
@@ -379,15 +379,15 @@ bool ExternalOutput::initContext() {
 
 		m_videoEncoderCodecInfo.codec = VIDEO_CODEC_H264;
 		m_videoEncoderCodecInfo.payloadType = 96;
-		m_videoEncoderCodecInfo.width = 640;
-		m_videoEncoderCodecInfo.height = 480;
-		m_videoEncoderCodecInfo.bitRate = 900000;
+		m_videoEncoderCodecInfo.width = 320;
+		m_videoEncoderCodecInfo.height = 240;
+		m_videoEncoderCodecInfo.bitRate = 200000;
 		m_videoEncoderCodecInfo.frameRate = 30;
 
 		m_videoDecoderCodecInfo.codec = VIDEO_CODEC_VP8;
 		m_videoDecoderCodecInfo.payloadType = VP8_90000_PT;
-		m_videoDecoderCodecInfo.width = 640;
-		m_videoDecoderCodecInfo.height = 480;
+		m_videoDecoderCodecInfo.width = 320;
+		m_videoDecoderCodecInfo.height = 240;
 		m_videoDecoderCodecInfo.bitRate = 900000;
 		m_videoDecoderCodecInfo.frameRate = 30;
 

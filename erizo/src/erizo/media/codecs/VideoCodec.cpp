@@ -102,7 +102,7 @@ namespace erizo {
 
   int VideoEncoder::encodeVideo (unsigned char* inBuffer, int inLength, unsigned char*& outBuffer, int& hasFrame, long long pts){
 
-	ELOG_DEBUG("VideoEncoder::encodeVideo pts=%lld", pts);
+	//ELOG_DEBUG("VideoEncoder::encodeVideo pts=%lld", pts);
 
     int size = vCoderContext->width * vCoderContext->height;
     //    ELOG_DEBUG("vCoderContext width %d", vCoderContext->width);
@@ -130,7 +130,7 @@ namespace erizo {
     //        inLength, size, vCoderContext->width, pkt.size);
     ret = avcodec_encode_video2(vCoderContext, &pkt, cPicture, &got_packet);
 
-    ELOG_DEBUG("avcodec_encode_video2 created a buffer of size %d and ret=%d", pkt.size, ret);
+    //ELOG_DEBUG("avcodec_encode_video2 created a buffer of size %d and ret=%d", pkt.size, ret);
 
     //    ELOG_DEBUG("Encoded video size %u, ret %d, got_packet %d, pts %lld, dts %lld",
     //        pkt.size, ret, got_packet, pkt.pts, pkt.dts);
