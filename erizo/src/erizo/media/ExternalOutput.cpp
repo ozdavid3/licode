@@ -9,7 +9,7 @@ namespace erizo {
 
 DEFINE_LOGGER(ExternalOutput, "media.ExternalOutput");
 ExternalOutput::ExternalOutput(const std::string& outputUrl) :
-		fec_receiver_(this), audioQueue_(5.0, 10.0), videoQueue_(5.0, 10.0), inited_(
+		fec_receiver_(this), audioQueue_(10.0, 60.0), videoQueue_(10.0, 60.0), inited_(
 				false), video_stream_(NULL), audio_stream_(NULL), firstVideoTimestamp_(
 				-1), firstAudioTimestamp_(-1), firstDataReceived_(-1), videoOffsetMsec_(
 				-1), audioOffsetMsec_(-1), vp8SearchState_(lookingForStart), needToSendFir_(
@@ -340,7 +340,7 @@ void ExternalOutput::writeVideoData(char* buf, int len) {
 				int ret = av_interleaved_write_frame(context_, &avpkt); // takes ownership of the packet
 
 				//ELOG_ERROR("sending video packet PTS = %lld", firstPTS);
-				//ELOG_ERROR("av_interleaved_write_frame for video returned %d", ret);
+				ELOG_ERROR("av_interleaved_write_frame for video with size %d returned %d", size1, ret);
 				firstPTS = 0;
 			}
 		}
